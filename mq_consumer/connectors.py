@@ -1,3 +1,5 @@
+import sys
+
 import pika
 import pika.credentials
 import pika.exceptions
@@ -27,7 +29,6 @@ class Connector:
             self.exchange_type = self.DELAY_TYPE
         else:
             self.exchange_type = self.DIRECT_TYPE
-        self.create_connection()
 
     def create_connection(self):
         self.connection = pika.BlockingConnection(self.connection_parameters)
@@ -51,5 +52,5 @@ class Connector:
 
 class Reconnector(Connector):
     def __init__(self, connection_parameters: pika.ConnectionParameters, *args, **kwargs):
-        connection_parameters.connection_attempts = float('inf')
+        connection_parameters.connection_attempts = sys.maxsize
         super().__init__(connection_parameters, *args, **kwargs)

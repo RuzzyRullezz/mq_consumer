@@ -9,15 +9,17 @@ import pika.exceptions
 
 from .connectors import Connector, Reconnector
 from .message import MQMessage
+from .publishers import Publisher, JSONPublisher
 
 
 class Consumer:
     def __init__(self, connector: Connector, handler: Callable):
         self.connector = connector
         self.handler = handler
-        self.connector.channel.basic_consume(self.handler, queue=self.connector.queue)
 
     def start_consuming(self):
+        self.connector.create_connection()
+        self.connector.channel.basic_consume(self.handler, queue=self.connector.queue)
         self.connector.channel.start_consuming()
 
     def stop_consuming(self):
@@ -28,6 +30,13 @@ class Consumer:
             self.start_consuming()
         finally:
             self.stop_consuming()
+
+    def get_publisher(self, publisher_cls) -> Publisher:
+        return publisher_cls(self.connector)
+
+    # noinspection PyTypeChecker
+    def get_json_publisher(self) -> JSONPublisher:
+        return JSONPublisher(self.connector)
 
 
 class ReconConsumer(Consumer):
@@ -44,8 +53,6 @@ class ReconConsumer(Consumer):
             except pika.exceptions.AMQPError:
                 if self.logger:
                     self.logger.exception('RabbitMQ consumer exception')
-                self.connector.create_connection()
-                self.connector.channel.basic_consume(self.handler, queue=self.connector.queue)
 
 
 class SafeConsumer(ReconConsumer):
@@ -115,9 +122,10 @@ class NotEmptyConsumer(Consumer):
             if not self.count:
                 ch.stop_consuming()
 
-    def __init__(self, connector: Connector, handler: Callable):
-        super().__init__(connector, handler)
+    def start_consuming(self):
+        self.connector.create_connection()
         msg_count = self.connector.declared_queue.method.message_count
         if msg_count > 0:
-            callback = self.CountCallback(msg_count, handler)
+            callback = self.CountCallback(msg_count, self.handler)
             self.connector.channel.basic_consume(callback, queue=self.connector.queue)
+            self.connector.channel.start_consuming()

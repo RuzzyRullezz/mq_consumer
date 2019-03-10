@@ -3,13 +3,14 @@ import logging
 import pika
 import pika.exceptions
 
-from .consumers import Connector, Reconnector
+from .connectors import Connector, Reconnector
 from . import dumpers
 
 
 class Publisher:
     def __init__(self, connector: Connector):
         self.connector = connector
+        self.connector.create_connection()
 
     def publish(self, **params):
         self.connector.channel.basic_publish(**params)
@@ -47,7 +48,6 @@ class Publisher:
 
 
 class ReconPublisher(Publisher):
-
     def __init__(self, connector: Reconnector, logger: logging.Logger = None):
         assert isinstance(connector, Reconnector), 'connector must be Reconnector instance'
         self.logger = logger
@@ -65,7 +65,7 @@ class ReconPublisher(Publisher):
 
 
 class JSONPublisher(ReconPublisher):
-    def send_message(self, message, content_type=None, delay=0, properties=None):
+    def send_message(self, message, delay=0, properties=None):
         return super(ReconPublisher, self).send_message(
             message, content_type="application/json", delay=delay, properties=properties,
         )
