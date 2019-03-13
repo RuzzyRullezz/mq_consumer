@@ -64,7 +64,7 @@ class ReconPublisher(Publisher):
                 self.connector.create_connection()
 
 
-class JSONPublisher(ReconPublisher):
+class JSONPublisher(Publisher):
     def send_message(self, message, delay=0, properties=None):
         return super(ReconPublisher, self).send_message(
             message, content_type="application/json", delay=delay, properties=properties,
