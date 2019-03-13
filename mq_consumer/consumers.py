@@ -28,6 +28,8 @@ class Consumer:
     def run(self):
         try:
             self.start_consuming()
+        except KeyboardInterrupt:
+            pass
         finally:
             self.stop_consuming()
 
