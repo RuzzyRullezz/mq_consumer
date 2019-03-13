@@ -66,6 +66,6 @@ class ReconPublisher(Publisher):
 
 class JSONPublisher(Publisher):
     def send_message(self, message, delay=0, properties=None):
-        return super(ReconPublisher, self).send_message(
+        return super().send_message(
             message, content_type="application/json", delay=delay, properties=properties,
         )
