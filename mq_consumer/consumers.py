@@ -114,20 +114,27 @@ class MultipleConsumer(Consumer):
 class NotEmptyConsumer(Consumer):
 
     class CountCallback:
-        def __init__(self, count: int, handler: Callable):
+        def __init__(self, count: int, handler: Callable, finish_handler: Callable = None):
             self.count = count
             self.handler = handler
+            self.finish_handler = finish_handler
 
         def __call__(self, ch, method, properties, body):
             self.handler(ch, method, properties, body)
             self.count -= 1
-            if not self.count:
+            if self.count <= 0:
+                if self.finish_handler:
+                    self.finish_handler()
                 ch.stop_consuming()
+
+    def __init__(self, connector: Connector, handler: Callable, finish_handler: Callable = None):
+        self.finish_hadler = finish_handler
+        super().__init__(connector, handler)
 
     def start_consuming(self):
         self.connector.create_connection()
         msg_count = self.connector.declared_queue.method.message_count
         if msg_count > 0:
-            callback = self.CountCallback(msg_count, self.handler)
+            callback = self.CountCallback(msg_count, self.handler, finish_handler=self.finish_hadler)
             self.connector.channel.basic_consume(callback, queue=self.connector.queue)
             self.connector.channel.start_consuming()

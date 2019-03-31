@@ -1,17 +1,17 @@
 from mq_consumer.connectors import Reconnector
-from mq_consumer.consumers import SafeConsumer
+from mq_consumer.consumers import NotEmptyConsumer
 
 from tests.test_connection_params import connection_parameters
 
 
-class TestConsumer(SafeConsumer):
+class TestConsumer(NotEmptyConsumer):
     def __init__(self):
         connector = Reconnector(
             connection_parameters,
             'exchange',
             'test',
         )
-        super().__init__(connector, self.handle)
+        super().__init__(connector, self.handle, finish_handler=lambda: print("FINISHED"))
 
     @staticmethod
     def handle(channel, method, properties, body):
