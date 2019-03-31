@@ -1,26 +1,22 @@
-import pika
+from mq_consumer.connectors import Connector
 
 
 class MQChecker:
-    def __init__(self, host, port, user, password):
-        self.credentials = pika.credentials.PlainCredentials(user, password)
-        self.connection = pika.BlockingConnection(
-            pika.ConnectionParameters(
-                host=host, port=port,
-                credentials=pika.credentials.PlainCredentials(user, password)
-            )
-        )
-        self.channel = self.connection.channel()
+    def __init__(self, connector: Connector):
+        self.connector = connector
 
-    def queue_declare(self, queue):
-        return self.channel.queue_declare(queue=queue, passive=True)
+    def get_message_count(self):
+        self.connector.create_connection(declare=False)
+        try:
+            msg_count = self.connector.channel.queue_declare(queue=self.connector.queue, passive=True).method.message_count
+        finally:
+            self.connector.close()
+        return msg_count
 
-    def close(self):
-        if self.connection:
-            self.connection.close()
-
-    def get_message_count(self, queue):
-        return self.queue_declare(queue).method.message_count
-
-    def get_consumer_count(self, queue):
-        return self.queue_declare(queue).method.message_count
+    def get_consumer_count(self):
+        self.connector.create_connection(declare=False)
+        try:
+            consumers_count = self.connector.channel.queue_declare(queue=self.connector.queue, passive=True).method.consumer_count
+        finally:
+            self.connector.close()
+        return consumers_count

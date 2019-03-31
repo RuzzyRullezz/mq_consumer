@@ -32,22 +32,23 @@ class Connector:
         self.declared_queue = None
         self.use_delay = use_delay
 
-    def create_connection(self):
+    def create_connection(self, declare=True):
         self.connection = pika.BlockingConnection(self.connection_parameters)
         self.channel = self.connection.channel()
-        self.declared_queue = self.channel.queue_declare(queue=self.queue, durable=True)
-        if self.use_delay:
-            exchange_type = self.DELAY_TYPE
-            arguments = {"x-delayed-type": self.exchange_type}
-        else:
-            exchange_type = self.exchange_type
-            arguments = None
-        self.channel.exchange_declare(
-            exchange=self.exchange, exchange_type=exchange_type, durable=True, arguments=arguments
-        )
-        self.channel.queue_bind(self.queue, self.exchange, routing_key=self.routing_key)
-        if self.prefetch_count:
-            self.channel.basic_qos(prefetch_count=self.prefetch_count)
+        if declare:
+            self.declared_queue = self.channel.queue_declare(queue=self.queue, durable=True)
+            if self.use_delay:
+                exchange_type = self.DELAY_TYPE
+                arguments = {"x-delayed-type": self.exchange_type}
+            else:
+                exchange_type = self.exchange_type
+                arguments = None
+            self.channel.exchange_declare(
+                exchange=self.exchange, exchange_type=exchange_type, durable=True, arguments=arguments
+            )
+            self.channel.queue_bind(self.queue, self.exchange, routing_key=self.routing_key)
+            if self.prefetch_count:
+                self.channel.basic_qos(prefetch_count=self.prefetch_count)
 
     def close(self):
         if self.connection:
