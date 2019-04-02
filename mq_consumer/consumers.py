@@ -138,3 +138,7 @@ class NotEmptyConsumer(Consumer):
             callback = self.CountCallback(msg_count, self.handler, finish_handler=self.finish_hadler)
             self.connector.channel.basic_consume(callback, queue=self.connector.queue)
             self.connector.channel.start_consuming()
+        else:
+            if self.finish_hadler:
+                self.finish_hadler()
+
