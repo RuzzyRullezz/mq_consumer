@@ -19,7 +19,7 @@ class Consumer:
 
     def start_consuming(self):
         self.connector.create_connection()
-        self.connector.channel.basic_consume(self.handler, queue=self.connector.queue)
+        self.connector.channel.basic_consume(self.connector.queue, self.handler)
         self.connector.channel.start_consuming()
 
     def stop_consuming(self):
