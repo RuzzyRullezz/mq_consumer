@@ -10,6 +10,6 @@ connection_parameters = pika.ConnectionParameters(
         host=host,
         port=port,
         credentials=pika.credentials.PlainCredentials(user, password),
-        heartbeat_interval=0,
+        heartbeat=0,
         connection_attempts=connection_attempts
 )

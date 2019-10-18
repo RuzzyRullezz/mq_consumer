@@ -10,6 +10,6 @@ setup(
     packages=find_packages(),
     package_dir={'mq_consumer': 'mq_consumer'},
     install_requires=[
-        'pika==0.13.1',
+        'pika==1.1.0',
     ],
 )
