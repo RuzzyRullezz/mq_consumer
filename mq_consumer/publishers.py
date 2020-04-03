@@ -18,7 +18,7 @@ class Publisher:
     def send_message(self, message, content_type='text/plain', delay=0, properties=None):
         dumper = dumpers.get_dumper(content_type)
         if dumper is None:
-            raise RuntimeError("Can't dumper by content type %s" % content_type)
+            raise RuntimeError("Can't get dumper by content type %s" % content_type)
         message = dumper(message)
         properties = properties or {}
         properties.update({
