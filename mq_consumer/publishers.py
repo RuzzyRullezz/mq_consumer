@@ -1,26 +1,25 @@
+import json
 import logging
+import pickle
 
 import pika
 import pika.exceptions
 
 from .connectors import Connector, Reconnector
-from . import dumpers
 from .mime_types import MqMimeTypesEnum
 
 
 class Publisher:
-    def __init__(self, connector: Connector):
+    def __init__(self, connector: Connector, mime_type: MqMimeTypesEnum):
         self.connector = connector
+        self.mime_type = mime_type
         self.connector.create_connection()
 
     def publish(self, **params):
         self.connector.channel.basic_publish(**params)
 
-    def send_message(self, message, content_type='text/plain', delay=0, properties=None):
-        dumper = dumpers.get_dumper(content_type)
-        if dumper is None:
-            raise RuntimeError("Can't get dumper by content type %s" % content_type)
-        message = dumper(message)
+    def send_message(self, obj, content_type='text/plain', delay=0, properties=None):
+        message = self.mime_type.serializer(obj)
         properties = properties or {}
         properties.update({
             'delivery_mode': 2,
@@ -49,10 +48,10 @@ class Publisher:
 
 
 class ReconPublisher(Publisher):
-    def __init__(self, connector: Reconnector, logger: logging.Logger = None):
+    def __init__(self, connector: Reconnector, mime_type: MqMimeTypesEnum, logger: logging.Logger = None):
         assert isinstance(connector, Reconnector), 'connector must be Reconnector instance'
         self.logger = logger
-        super().__init__(connector)
+        super().__init__(connector, mime_type)
 
     def publish(self, **params):
         while True:
@@ -63,17 +62,3 @@ class ReconPublisher(Publisher):
                 if self.logger:
                     self.logger.exception('RabbitMQ publisher exception')
                 self.connector.create_connection()
-
-
-class JSONPublisher(Publisher):
-    def send_message(self, message, delay=0, properties=None):
-        return super().send_message(
-            message, content_type=MqMimeTypesEnum.json.value, delay=delay, properties=properties,
-        )
-
-
-class PicklePublisher(Publisher):
-    def send_message(self, message, delay=0, properties=None):
-        return super().send_message(
-            message, content_type=MqMimeTypesEnum.pickle.value, delay=delay, properties=properties,
-        )

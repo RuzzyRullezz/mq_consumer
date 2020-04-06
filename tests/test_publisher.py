@@ -4,7 +4,7 @@ from tests.test_consumer import TestConsumer
 
 
 def run():
-    with TestConsumer().get_json_publisher() as test_publisher:
+    with TestConsumer.create_publisher() as test_publisher:
         for i in range(100):
             test_publisher.send_message(dict(
                 text=f'Сообщение {i}',

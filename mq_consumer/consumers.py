@@ -9,7 +9,6 @@ import pika.exceptions
 
 from .connectors import Connector, Reconnector
 from .message import MQMessage
-from .publishers import Publisher, JSONPublisher
 
 
 class Consumer:
@@ -23,6 +22,8 @@ class Consumer:
         self.connector.channel.start_consuming()
 
     def stop_consuming(self):
+        if self.connector.channel is None:
+            return
         self.connector.channel.stop_consuming()
 
     def run(self):
@@ -32,13 +33,6 @@ class Consumer:
             pass
         finally:
             self.stop_consuming()
-
-    def get_publisher(self, publisher_cls) -> Publisher:
-        return publisher_cls(self.connector)
-
-    # noinspection PyTypeChecker
-    def get_json_publisher(self) -> JSONPublisher:
-        return JSONPublisher(self.connector)
 
 
 class ReconConsumer(Consumer):
@@ -128,17 +122,17 @@ class NotEmptyConsumer(Consumer):
                 ch.stop_consuming()
 
     def __init__(self, connector: Connector, handler: Callable, finish_handler: Callable = None):
-        self.finish_hadler = finish_handler
+        self.finish_handler = finish_handler
         super().__init__(connector, handler)
 
     def start_consuming(self):
         self.connector.create_connection()
         msg_count = self.connector.declared_queue.method.message_count
         if msg_count > 0:
-            callback = self.CountCallback(msg_count, self.handler, finish_handler=self.finish_hadler)
-            self.connector.channel.basic_consume(callback, queue=self.connector.queue)
+            callback = self.CountCallback(msg_count, self.handler, finish_handler=self.finish_handler)
+            self.connector.channel.basic_consume(self.connector.queue, callback)
             self.connector.channel.start_consuming()
         else:
-            if self.finish_hadler:
-                self.finish_hadler()
+            if self.finish_handler:
+                self.finish_handler()
 
