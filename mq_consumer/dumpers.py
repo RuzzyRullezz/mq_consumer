@@ -14,7 +14,7 @@ def register(content_type):
     return wrap_decor
 
 
-@register('text/plain')
+@register('application/x-python-pickle')
 def pickle_dumper(data):
     return pickle.dumps(data)
 

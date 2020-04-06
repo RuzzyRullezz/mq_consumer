@@ -69,3 +69,10 @@ class JSONPublisher(Publisher):
         return super().send_message(
             message, content_type="application/json", delay=delay, properties=properties,
         )
+
+
+class PicklePublisher(Publisher):
+    def send_message(self, message, delay=0, properties=None):
+        return super().send_message(
+            message, content_type="application/x-python-pickle", delay=delay, properties=properties,
+        )
