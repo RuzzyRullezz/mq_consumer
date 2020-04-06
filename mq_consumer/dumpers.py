@@ -1,6 +1,7 @@
 import json
 import pickle
 
+from .mime_types import MqMimeTypesEnum
 from .encoders import DateTimeDecimalJSONEncoder
 
 
@@ -14,12 +15,12 @@ def register(content_type):
     return wrap_decor
 
 
-@register('application/x-python-pickle')
+@register(MqMimeTypesEnum.pickle.value)
 def pickle_dumper(data):
     return pickle.dumps(data)
 
 
-@register('application/json')
+@register(MqMimeTypesEnum.json.value)
 def json_dumper(data):
     return json.dumps(data, cls=DateTimeDecimalJSONEncoder)
 

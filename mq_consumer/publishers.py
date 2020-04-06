@@ -5,6 +5,7 @@ import pika.exceptions
 
 from .connectors import Connector, Reconnector
 from . import dumpers
+from .mime_types import MqMimeTypesEnum
 
 
 class Publisher:
@@ -67,12 +68,12 @@ class ReconPublisher(Publisher):
 class JSONPublisher(Publisher):
     def send_message(self, message, delay=0, properties=None):
         return super().send_message(
-            message, content_type="application/json", delay=delay, properties=properties,
+            message, content_type=MqMimeTypesEnum.json.value, delay=delay, properties=properties,
         )
 
 
 class PicklePublisher(Publisher):
     def send_message(self, message, delay=0, properties=None):
         return super().send_message(
-            message, content_type="application/x-python-pickle", delay=delay, properties=properties,
+            message, content_type=MqMimeTypesEnum.pickle.value, delay=delay, properties=properties,
         )
