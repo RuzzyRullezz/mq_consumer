@@ -1,8 +1,9 @@
-import multiprocessing
 from typing import Optional, Type
 from abc import ABCMeta, abstractmethod
 
 import pika
+import multiprocessing_on_dill as multiprocessing
+
 from .connectors import Connector
 from .consumers import Consumer
 from .mime_types import MqMimeTypesEnum

@@ -34,4 +34,4 @@ class TestConsumer(BaseConsumer):
 
 
 if __name__ == '__main__':
-    TestConsumer().consume(consumers_cnt=1)
+    TestConsumer().consume(consumers_cnt=2)

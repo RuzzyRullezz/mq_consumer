@@ -11,5 +11,6 @@ setup(
     package_dir={'mq_consumer': 'mq_consumer'},
     install_requires=[
         'pika==1.1.0',
+        'multiprocessing-on-dill==3.5.0a4',
     ],
 )
