@@ -1,3 +1,9 @@
+try:
+    import mq_consumer
+except ImportError:
+    import bootstraper
+    bootstraper.setup()
+
 from mq_consumer.connectors import Connector
 from mq_consumer.consumers import NotEmptyConsumer
 from mq_consumer.convenience import BaseConsumer
@@ -28,4 +34,4 @@ class TestConsumer(BaseConsumer):
 
 
 if __name__ == '__main__':
-    TestConsumer().consume()
+    TestConsumer().consume(consumers_cnt=1)
